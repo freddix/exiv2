@@ -1,12 +1,13 @@
 Summary:	Exif and Iptc metadata manipulation tools
 Name:		exiv2
 Version:	0.23
-Release:	1
+Release:	2
 License:	GPL v2+
 Group:		Applications
 Source0:	http://www.exiv2.org/%{name}-%{version}.tar.gz
 # Source0-md5:	dab67c07bb63a4386d4ea607a8e06eaf
 Source1:	ax_cxx_check_flag.m4
+Source2:	check_zlib.m4
 Patch0:		%{name}-mkinstalldirs.patch
 URL:		http://www.exiv2.org/
 BuildRequires:	autoconf
@@ -39,7 +40,7 @@ Exif and Iptc metadata manipulation library development files.
 %setup -q
 %patch0 -p0
 
-install %{SOURCE1} config
+install %{SOURCE1} %{SOURCE2} config
 ln -s config/configure.ac .
 
 %build
