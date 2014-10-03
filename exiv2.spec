@@ -1,19 +1,16 @@
 Summary:	Exif and Iptc metadata manipulation tools
 Name:		exiv2
-Version:	0.23
-Release:	2
+Version:	0.24
+Release:	1
 License:	GPL v2+
 Group:		Applications
 Source0:	http://www.exiv2.org/%{name}-%{version}.tar.gz
-# Source0-md5:	dab67c07bb63a4386d4ea607a8e06eaf
-Source1:	ax_cxx_check_flag.m4
-Source2:	check_zlib.m4
-Patch0:		%{name}-mkinstalldirs.patch
+# Source0-md5:	b8a23dc56a98ede85c00718a97a8d6fc
+Patch0:		%{name}-cmake_LIB_SUFFIX.patch
+Patch1:		%{name}-cmake_mandir.patch
 URL:		http://www.exiv2.org/
-BuildRequires:	autoconf
-BuildRequires:	automake
+BuildRequires:	cmake
 BuildRequires:	libstdc++-devel
-BuildRequires:	libtool
 BuildRequires:	zlib-devel
 Requires:	%{name}-libs = %{version}-%{release}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -32,42 +29,29 @@ Exif and Iptc metadata manipulation library.
 Summary:	Exif and Iptc metadata manipulation library development files
 Group:		Development/Libraries
 Requires:	%{name}-libs = %{version}-%{release}
+Requires:	libstdc++-devel
+Requires:	zlib-devel
 
 %description devel
 Exif and Iptc metadata manipulation library development files.
 
 %prep
 %setup -q
-%patch0 -p0
-
-install %{SOURCE1} %{SOURCE2} config
-ln -s config/configure.ac .
+%patch0 -p1
+%patch1 -p1
 
 %build
-%{__libtoolize}
-%{__aclocal} -I config
-%{__autoconf}
-# don't touch autoheader, config.h.in has been manually modified
-%configure \
-	--disable-static
-%{__make} \
-	CFLAGS="%{rpmcflags} -Wall"	\
-	CXXFLAGS="%{rpmcxxflags} -Wall"	\
-	DESTDIR=$RPM_BUILD_ROOT		\
-	bindir=%{_bindir}		\
-	incdir=%{_includedir}/exiv2	\
-	libdir=%{_libdir}
+install -d build
+cd build
+%cmake .. \
+	-DEXIV2_ENABLE_BUILD_PO:BOOL=ON	\
+	-DEXIV2_ENABLE_BUILD_SAMPLES=ON
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%{__make} install \
-	CFLAGS="%{rpmcflags} -Wall"	\
-	CXXFLAGS="%{rpmcxxflags} -Wall"	\
-	DESTDIR=$RPM_BUILD_ROOT		\
-	bindir=%{_bindir}		\
-	incdir=%{_includedir}/exiv2	\
-	libdir=%{_libdir}
+%{__make} -C build install \
+	DESTDIR=$RPM_BUILD_ROOT
 
 %find_lang %{name}
 
@@ -85,13 +69,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %files libs
 %defattr(644,root,root,755)
-%attr(755,root,root) %ghost %{_libdir}/libexiv2.so.??
+%attr(755,root,root) %ghost %{_libdir}/libexiv2.so.13
 %attr(755,root,root) %{_libdir}/libexiv2.so.*.*.*
 
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libexiv2.so
-%{_libdir}/libexiv2.la
 %{_includedir}/%{name}
 %{_pkgconfigdir}/exiv2.pc
 
